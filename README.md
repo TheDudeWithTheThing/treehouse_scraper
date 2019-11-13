@@ -1,4 +1,4 @@
-# treehouse_scraper
+# Treehouse Scraper
 
 Scrapes treehouse beer list for name and prices. The output is a csv of a beer name row and the price below it. This is then copied to a google sheet to do the allotments and cost of hauls.
 
