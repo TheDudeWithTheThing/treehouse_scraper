@@ -1,5 +1,6 @@
 import csv
 import re
+import string
 import scrapy
 
 
@@ -19,6 +20,7 @@ class BrickSetSpider(scrapy.Spider):
                 continue
 
             beer_price = re.search("(\d\.\d\d)[^%]", beer_desc)
+
             if beer_price is None:
                 continue
 
@@ -42,3 +44,21 @@ def write_csv(names_prices):
         csv_writer = csv.writer(the_csv)
         csv_writer.writerow(name_row)
         csv_writer.writerow(price_row)
+
+
+# LIMIT_REGEXES = [
+#     "24 cans PP",
+#     "Case Limit",
+#     "Limit (\d+) cans PP",
+#     "Limit 24 cans per pseron ",
+#     "Limit one case per person",
+#     "Limit one case PP",
+# ]
+
+# result = ""
+
+# for letter in list(string.ascii_uppercase):
+#     result += f"({letter}2 * {letter}3) + "
+
+
+# print(result)
