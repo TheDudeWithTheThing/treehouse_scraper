@@ -66,7 +66,7 @@ class BrickSetSpider(scrapy.Spider):
                             "title": title,
                             "price": price,
                             "quantity": quantity_and_name[1],
-                            "beer": quantity_and_name[2],
+                            "beer": self.extract_beer_name(quantity_and_name[2]),
                         }
                     )
             return parsed_list
@@ -88,7 +88,14 @@ class BrickSetSpider(scrapy.Spider):
 
     def parse_four_pack(self, title, price, beers):
         text = "".join(beers.css("::text").getall())
-        if "four-pack" in text or "4-pack" in text or "4-Pack" in title or "4 pk" in title or "4 Pack" in title:
+        if (
+            "four-pack" in text
+            or "4-pack" in text
+            or "4-Pack" in title
+            or "4 pk" in title
+            or "4 Pack" in title
+            or "four pack" in text
+        ):
             return {
                 "type": "four",
                 "title": title,
@@ -116,6 +123,28 @@ class BrickSetSpider(scrapy.Spider):
         name = re.search(r"^(.+) Flagship", text)
         if name:
             return name[1]
+
+        maybe_beer_names = [
+            "Very Green",
+            "Alter Ego",
+            "Julius",
+            "At Ease",
+            "Autumn",
+            "Beginner's Mind",
+            "Brisk",
+            "Crew Beer",
+            "Fall Classic",
+            "Green",
+            "Haze",
+            "On The Fly",
+            "Super Sap",
+            "Super Treat",
+            "Trick",
+        ]
+
+        for beer_name in maybe_beer_names:
+            if beer_name.lower() in text.lower():
+                return beer_name
 
         return text
 
