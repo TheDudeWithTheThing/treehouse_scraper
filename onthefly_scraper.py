@@ -44,7 +44,7 @@ class BrickSetSpider(scrapy.Spider):
         if re.search(r"24 cans", text):
             return {
                 "type": "case",
-                "title": title,
+                "title": self.extract_beer_name(title) + " Case",
                 "price": price,
                 "quantity": "24",
                 "beer": self.extract_beer_name(title),
@@ -127,20 +127,27 @@ class BrickSetSpider(scrapy.Spider):
 
         maybe_beer_names = [
             "Very Green",
+            "AAAlterrr Ego",
             "Alter Ego",
-            "Julius",
             "At Ease",
             "Autumn",
             "Beginner's Mind",
             "Brisk",
             "Crew Beer",
             "Fall Classic",
+            "Fruit Project",
+            "Fudge",
+            "Ghost Emoji",
             "Green",
             "Haze",
+            "Julius",
+            "Little Fire",
+            "Nomad",
             "On The Fly",
             "Super Sap",
             "Super Treat",
             "Trick",
+            "Whisper Oktoberfest",
         ]
 
         for beer_name in maybe_beer_names:
