@@ -21,6 +21,7 @@ class BrickSetSpider(scrapy.Spider):
         case_parse = self.parse_case(title, price, text)
         four_parse = self.parse_four_pack(title, price, beers)
         six_parse = self.parse_six_pack(title, price, beers)
+        twelve_parse = self.parse_twelve_pack(title, price, beers)
         singles_parse = self.parse_singles(title, price, beers)
 
         if mixed_parse:
@@ -32,6 +33,8 @@ class BrickSetSpider(scrapy.Spider):
             yield four_parse
         elif six_parse:
             yield six_parse
+        elif twelve_parse:
+            yield twelve_parse
         elif singles_parse:
             yield singles_parse
         else:
@@ -114,8 +117,21 @@ class BrickSetSpider(scrapy.Spider):
                 "type": "six",
                 "title": title,
                 "price": price,
-                "quantity": "4",
+                "quantity": "6",
                 "beer": title,
+            }
+
+        return None
+
+    def parse_twelve_pack(self, title, price, beers):
+        text = "".join(beers.css("::text").getall())
+        if "12 pack" in text or "12-pack" in title:
+            return {
+                "type": "twelve",
+                "title": title,
+                "price": price,
+                "quantity": "12",
+                "beer": self.extract_beer_name(title),
             }
 
         return None
@@ -126,6 +142,7 @@ class BrickSetSpider(scrapy.Spider):
             return name[1]
 
         maybe_beer_names = [
+            "King Julius",
             "Very Green",
             "AAAlterrr Ego",
             "Alter Ego",
