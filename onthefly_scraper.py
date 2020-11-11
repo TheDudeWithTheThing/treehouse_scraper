@@ -139,7 +139,7 @@ class BrickSetSpider(scrapy.Spider):
     def extract_beer_name(self, text):
         name = re.search(r"^(.+) Flagship", text)
         if name:
-            return name[1]
+            return name[1].strip()
 
         maybe_beer_names = [
             "King Julius",
@@ -151,6 +151,7 @@ class BrickSetSpider(scrapy.Spider):
             "Beginner's Mind",
             "Brisk",
             "Crew Beer",
+            "Daze",
             "Fall Classic",
             "Fruit Project",
             "Fudge",
@@ -169,9 +170,9 @@ class BrickSetSpider(scrapy.Spider):
 
         for beer_name in maybe_beer_names:
             if beer_name.lower() in text.lower():
-                return beer_name
+                return beer_name.strip()
 
-        return text
+        return text.strip()
 
     def is_beer(self, title):
         non_beer_terms = [
