@@ -85,7 +85,7 @@ class BrickSetSpider(scrapy.Spider):
                 "title": title,
                 "price": price,
                 "quantity": "1",
-                "beer": title,
+                "beer": self.extract_beer_name(title),
             }
 
         return None
@@ -105,7 +105,7 @@ class BrickSetSpider(scrapy.Spider):
                 "title": title,
                 "price": price,
                 "quantity": "4",
-                "beer": title,
+                "beer": self.extract_beer_name(title),
             }
 
         return None
@@ -118,7 +118,7 @@ class BrickSetSpider(scrapy.Spider):
                 "title": title,
                 "price": price,
                 "quantity": "6",
-                "beer": title,
+                "beer": self.extract_beer_name(title),
             }
 
         return None
@@ -142,28 +142,40 @@ class BrickSetSpider(scrapy.Spider):
             return name[1].strip()
 
         maybe_beer_names = [
+            "Homemade",
             "King Julius",
             "Very Green",
+            "GGGreennn",
+            "Abstraction",
             "AAAlterrr Ego",
             "Alter Ego",
             "At Ease",
             "Autumn",
+            "Bear",
             "Beginner's Mind",
+            "BBBrighttt Galaxy",
             "Brisk",
+            "Catharsis",
             "Crew Beer",
             "Daze",
             "Fall Classic",
+            "Force of Will",
+            "Free To Roam",
             "Fruit Project",
             "Fudge",
             "Ghost Emoji",
             "Green",
             "Haze",
+            "Juice Project Citra + Amarillo",
             "Julius",
             "Little Fire",
             "Nomad",
             "On The Fly",
+            "Peach Tart",
+            "Perfect Storm",
             "Super Sap",
             "Super Treat",
+            "Tranquility",
             "Trick",
             "Whisper Oktoberfest",
         ]
@@ -201,3 +213,9 @@ class BrickSetSpider(scrapy.Spider):
         ]
         lower_title = title.lower()
         return not any(word in lower_title for word in non_beer_terms)
+
+    def extract_hops(self, text):
+        hops = ["Amarillo", "Citra", "Galaxy", "El Dorado", "Mosaic", "Simcoe", "Strata", "Warrior"]
+        lower_title = text.lower()
+
+        return None
