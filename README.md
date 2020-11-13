@@ -6,10 +6,7 @@ This uses scrapy (https://scrapy.org/) to do all the heavy lifting and css style
 
 To run:
 
-`scrapy runspider scraper.py`
+`scrapy runspider onthefly_scraper.py -O beers.json`
 
 
-Outputs `treehouse.csv`
-
-
-Example output in repo
+Outputs `beers.json` for use in [Treehouse Cases](https://github.com/TheDudeWithTheThing/treehouse-cases)
