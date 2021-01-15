@@ -41,17 +41,16 @@ class BrickSetSpider(scrapy.Spider):
             if self.is_beer(title):
                 yield {"type": "unknown", "title": title, "price": price, "text": text, "debug": beers.getall()}
             else:
-                yield {"type": "merch", "title": title, "price": price, "text": text}
+                yield {"type": "merch", "title": title, "price": price}
 
     def parse_case(self, title, price, text):
-        if re.search(r"24 cans", text):
+        if "24 cans" in text or "one case" in text:
             return {
                 "type": "case",
                 "title": self.extract_beer_name(title) + " Case",
                 "price": price,
                 "quantity": "24",
                 "beer": self.extract_beer_name(title),
-                "debug": text,
             }
 
         return None
@@ -78,8 +77,15 @@ class BrickSetSpider(scrapy.Spider):
         return None
 
     def parse_singles(self, title, price, beers):
-        text = "".join(beers.css("::text").getall())
-        if "Maximum Order" in text or "one bottle" in text:
+        text = "".join(beers.css("::text").getall()).lower()
+        if (
+            "maximum mrder" in text
+            or "one bottle" in text
+            or "bottles per order" in text
+            or "one 12 oz. bottle" in text
+            or re.match(r"limit \d+ bottle", text)
+            or re.match(r"limit \w+ bottle", text)
+        ):
             return {
                 "type": "single",
                 "title": title,
@@ -96,6 +102,7 @@ class BrickSetSpider(scrapy.Spider):
             "four-pack" in text
             or "4-pack" in text
             or "4-Pack" in title
+            or "4-Pack" in text
             or "4 pk" in title
             or "4 Pack" in title
             or "four pack" in text
@@ -144,6 +151,7 @@ class BrickSetSpider(scrapy.Spider):
         maybe_beer_names = [
             "Homemade",
             "King Julius",
+            "JJJULIUSSS",
             "Very Green",
             "GGGreennn",
             "Abstraction",
@@ -155,8 +163,10 @@ class BrickSetSpider(scrapy.Spider):
             "Beginner's Mind",
             "BBBrighttt Galaxy",
             "Brisk",
+            "Cachet",
             "Catharsis",
             "Crew Beer",
+            "Curiosity One Hundred Five",
             "Daze",
             "Fall Classic",
             "Force of Will",
@@ -165,18 +175,41 @@ class BrickSetSpider(scrapy.Spider):
             "Fudge",
             "Ghost Emoji",
             "Green",
+            "Harmony",
             "Haze",
+            "Hold On To Sunshine",
+            "Impermanence",
+            "Juice Machine",
             "Juice Project Citra + Amarillo",
             "Julius",
             "Little Fire",
+            "Little Nugget",
+            "Moment of Clarity",
+            "New Decade Do-Over",
             "Nomad",
+            "Old Man",
             "On The Fly",
             "Peach Tart",
             "Perfect Storm",
+            "Permanence",
+            "Persist",
+            "Raven",
+            "Rover",
+            "Snow",
+            "Space & Time Russian Imperial Stout",
+            "Super Radiant",
             "Super Sap",
             "Super Treat",
+            "Super Vivid",
+            "Sweet Ride",
+            "The Universe Is Indifferent",
+            "Trail",
+            "Thankful",
             "Tranquility",
             "Trick",
+            "Unity",
+            "Wanderer",
+            "Warmth",
             "Whisper Oktoberfest",
         ]
 
@@ -190,8 +223,11 @@ class BrickSetSpider(scrapy.Spider):
         non_beer_terms = [
             "company hat",
             "apple cider",
+            "heritage cider",
+            "chemex",
             "can chiller",
             "coffee mug",
+            "diner mug",
             "tote bag",
             "glass",
             "puzzle",
@@ -210,6 +246,7 @@ class BrickSetSpider(scrapy.Spider):
             "blended coffee",
             "blend coffee",
             "espresso blend",
+            "ornament",
         ]
         lower_title = title.lower()
         return not any(word in lower_title for word in non_beer_terms)
