@@ -10,8 +10,11 @@ class BrickSetSpider(scrapy.Spider):
         for product_link in response.css(".grid-item > a.grid-item-link"):
             yield response.follow(product_link, self.parse_product_page)
 
+    def clean_up(self, text):
+        return re.sub(r"\n\s+", "", text)
+
     def parse_product_page(self, response):
-        title = response.css(".ProductItem-details-title::text").getall()[0]
+        title = self.clean_up(response.css(".ProductItem-details-title::text").getall()[0])
         price = response.css(".product-price > .sqs-money-native::text").getall()[0]
         beers = response.css(".ProductItem-details-excerpt > p")
 
@@ -23,8 +26,11 @@ class BrickSetSpider(scrapy.Spider):
         six_parse = self.parse_six_pack(title, price, beers)
         twelve_parse = self.parse_twelve_pack(title, price, beers)
         singles_parse = self.parse_singles(title, price, beers)
+        merch_parse = self.parse_merch(title, price)
 
-        if mixed_parse:
+        if merch_parse:
+            yield merch_parse
+        elif mixed_parse:
             for m in mixed_parse:
                 yield m
         elif case_parse:
@@ -40,8 +46,12 @@ class BrickSetSpider(scrapy.Spider):
         else:
             if self.is_beer(title):
                 yield {"type": "unknown", "title": title, "price": price, "text": text, "debug": beers.getall()}
-            else:
-                yield {"type": "merch", "title": title, "price": price}
+
+    def parse_merch(self, title, price):
+        if not self.is_beer(title):
+            return {"type": "merch", "title": title, "price": price, "quantity": 1, "beer": title}
+
+        return None
 
     def parse_case(self, title, price, text):
         if "24 cans" in text or "one case" in text:
@@ -57,7 +67,7 @@ class BrickSetSpider(scrapy.Spider):
 
     def parse_mixed(self, title, price, beers):
         text = "".join(beers.css("::text").getall())
-        if "Contains:" in text or "Mix Pack" in title:
+        if "Contains:" in text or "mix pack" in title.lower():
             parsed_list = []
             for beer in beers:
                 beer_text = "".join(beer.css("::text").getall())
@@ -79,10 +89,13 @@ class BrickSetSpider(scrapy.Spider):
     def parse_singles(self, title, price, beers):
         text = "".join(beers.css("::text").getall()).lower()
         if (
-            "maximum mrder" in text
+            "maximum order" in text
             or "one bottle" in text
+            or "single can" in title.lower()
             or "bottles per order" in text
+            or "per person" in text
             or "one 12 oz. bottle" in text
+            or "500 ml bottle" in title.lower()
             or re.match(r"limit \d+ bottle", text)
             or re.match(r"limit \w+ bottle", text)
         ):
@@ -99,13 +112,12 @@ class BrickSetSpider(scrapy.Spider):
     def parse_four_pack(self, title, price, beers):
         text = "".join(beers.css("::text").getall())
         if (
-            "four-pack" in text
-            or "4-pack" in text
-            or "4-Pack" in title
-            or "4-Pack" in text
-            or "4 pk" in title
-            or "4 Pack" in title
-            or "four pack" in text
+            "four-pack" in text.lower()
+            or "4-pack" in text.lower()
+            or "4-pack" in title.lower()
+            or "4 pk" in title.lower()
+            or "4 pack" in title.lower()
+            or "four pack" in text.lower()
         ):
             return {
                 "type": "four",
@@ -152,6 +164,7 @@ class BrickSetSpider(scrapy.Spider):
             "Homemade",
             "King Julius",
             "JJJULIUSSS",
+            "Very GGGreennn",
             "Very Green",
             "GGGreennn",
             "Abstraction",
@@ -161,30 +174,39 @@ class BrickSetSpider(scrapy.Spider):
             "Autumn",
             "Bear",
             "Beginner's Mind",
+            "Beneficiaries of Chance",
             "BBBrighttt Galaxy",
+            "Big Nugget",
             "Brisk",
+            "Brownie",
             "Cachet",
             "Catharsis",
+            "Cozy",
             "Crew Beer",
             "Curiosity One Hundred Five",
             "Daze",
+            "Doubleganger",
             "Fall Classic",
             "Force of Will",
             "Free To Roam",
-            "Fruit Project",
             "Fudge",
             "Ghost Emoji",
             "Green",
             "Harmony",
             "Haze",
             "Hold On To Sunshine",
+            "Human Condition",
             "Impermanence",
+            "Iridescent",
             "Juice Machine",
             "Juice Project Citra + Amarillo",
+            "Juice Project Citra + Simcoe",
+            "Juice Project",
             "Julius",
             "Little Fire",
             "Little Nugget",
             "Moment of Clarity",
+            "Nervous Energy",
             "New Decade Do-Over",
             "Nomad",
             "Old Man",
@@ -197,10 +219,14 @@ class BrickSetSpider(scrapy.Spider):
             "Rover",
             "Snow",
             "Space & Time Russian Imperial Stout",
+            "Spring",
+            "Steadfast",
             "Super Radiant",
             "Super Sap",
             "Super Treat",
+            "Super Typhoon",
             "Super Vivid",
+            "Sweet Ride Fluffernutter",
             "Sweet Ride",
             "The Universe Is Indifferent",
             "Trail",
@@ -214,13 +240,15 @@ class BrickSetSpider(scrapy.Spider):
         ]
 
         for beer_name in maybe_beer_names:
-            if beer_name.lower() in text.lower():
+            if re.search(rf"\b{beer_name.lower()}\b", text.lower()):
                 return beer_name.strip()
 
         return text.strip()
 
     def is_beer(self, title):
         non_beer_terms = [
+            "leather patch",
+            "bottle opener",
             "company hat",
             "apple cider",
             "heritage cider",
@@ -246,6 +274,7 @@ class BrickSetSpider(scrapy.Spider):
             "blended coffee",
             "blend coffee",
             "espresso blend",
+            "starter kit",
             "ornament",
         ]
         lower_title = title.lower()
